@@ -14,14 +14,15 @@ app = Flask(__name__)
 
 class DataProcessing(object):
     @staticmethod
-    def get_data():
+    def get_data(coin, currency):
         """
-        Loads historical BTC hourly prices.
-        :return: tuple of dataset and the used MinMaxScaler
+        Loads historical cryptocurrency hourly prices.
+        :return: dataset, MinMaxScaler and the last datetime
         """
         # Load the dataset
         endpoint = 'https://min-api.cryptocompare.com/data/histohour'
-        res = requests.get(endpoint + '?fsym=BTC&tsym=USD&limit=300&aggregate=1')
+        res = requests.get(
+            endpoint + '?fsym={coin}&tsym={currency}&limit=300&aggregate=1'.format(coin=coin, currency=currency))
         hist = pandas.DataFrame(json.loads(res.content)['Data'])
         # Consider closing prices
         dataset = hist.close.values
@@ -110,7 +111,7 @@ class Forecasting(object):
         return forecast_predict
 
 
-def generate_dates_hourly(start, n):
+def generate_dates_hourly(start, number):
     """
     Generates future n dates with hourly timestep with respect to start date
     :param start: start datetime
@@ -118,14 +119,25 @@ def generate_dates_hourly(start, n):
     :return: future n dates, start not included
     """
     future_datetimes = []
-    for t in range(1, n + 1):
+    for t in range(1, number + 1):
         future_datetimes.append(start + datetime.timedelta(hours=t))
     return future_datetimes
 
 
-@app.route('/predict/')
-def predict():
-    dataset, scaler, last_datetime = DataProcessing.get_data()
+@app.route('/')
+def hello():
+    json_output = json.dumps('Hi there! ;)')
+    return json_output
+
+
+@app.route('/predict/<string:coin>/<string:currency>')
+def predict(coin, currency):
+    """
+    :param coin: cryptocurrecy to forecast (eg. BTC, ETH)
+    :param currency: base currency to show prices of a specific cryptocurrency (eg. USD, EUR)
+    :return: forecasted cryptocurrency prices of the form {date: price}
+    """
+    dataset, scaler, last_datetime = DataProcessing.get_data(coin=coin, currency=currency)
 
     # Split dataset into train and test sets
     look_back = int(len(dataset) * 0.20)
