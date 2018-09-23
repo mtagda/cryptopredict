@@ -7,6 +7,9 @@ from keras.layers import Dense, LSTM
 from keras.models import Sequential
 from sklearn.preprocessing import MinMaxScaler
 import datetime
+from flask import Flask
+
+app = Flask(__name__)
 
 
 class DataProcessing(object):
@@ -120,6 +123,7 @@ def generate_dates_hourly(start, n):
     return future_datetimes
 
 
+@app.route('/')
 def predict():
     dataset, scaler, last_datetime = DataProcessing.get_data()
 
@@ -155,9 +159,8 @@ def predict():
     # Create JSON output of the form {date: price}
     dict_output = {future_dates[i].isoformat(): str(future_predict[i][0]) for i in range(0, 6)}
     json_output = json.dumps(dict_output)
-
-    print(json_output)
     return json_output
 
 
-predict()
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')
