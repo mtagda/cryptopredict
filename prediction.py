@@ -123,7 +123,7 @@ def generate_dates_hourly(start, n):
     return future_datetimes
 
 
-@app.route('/')
+@app.route('/predict/')
 def predict():
     dataset, scaler, last_datetime = DataProcessing.get_data()
 
