@@ -1,2 +1,2 @@
 # cryptopredict
-Prediction of Etherum price
+Prediction of Bitcoin price
