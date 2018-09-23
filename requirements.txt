@@ -9,3 +9,5 @@ statsmodels
 matplotlib
 requests
 tqdm
+flask
+flask_restful
