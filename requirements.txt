@@ -1,8 +1,8 @@
 cryptocompare
-Tensorflow==1.2.0
-Keras==2.1.1
-Pandas
-Numpy
+tensorflow==1.2.0
+keras==2.1.1
+pandas
+numpy
 h5py==2.7.0
 sklearn
 statsmodels
