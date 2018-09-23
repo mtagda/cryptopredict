@@ -8,7 +8,8 @@ In order to do that, you need to fetch historical data (here from the Cryptocomp
 
     # Load the dataset
     endpoint = 'https://min-api.cryptocompare.com/data/histohour'
-    res = requests.get(endpoint + '?fsym=BTC&tsym=USD&limit=300&aggregate=1')
+    res = requests.get(
+            endpoint + '?fsym={coin}&tsym={currency}&limit=300&aggregate=1'.format(coin=coin, currency=currency))
 
 Then, we create a pandas DataFrame object to have a better access to our fetched data.
 
@@ -56,3 +57,12 @@ You just need to run the following commands
 
 Sample output to the command above:
 {"2018-09-23T16:00:00": "6498.334", "2018-09-23T17:00:00": "6434.0776", "2018-09-23T18:00:00": "6379.181", "2018-09-23T19:00:00": "6332.5576", "2018-09-23T20:00:00": "6293.8623", "2018-09-23T21:00:00": "6262.3164"}
+
+## FUTURE WORK
+To improve the quality of my solution in additional time, the following steps could be done:
+- Fetching more historical data to have bigger training and test datasets. In my implementation, I only consider the last 300 hours (300 datapoints) mostly due to time limitation. One has to test how much data is optimal to take under consideration. 
+- Testing different Machine Learning models (-> "No Free Lunch" theorem :)). I decided to use tghe Long Short Term Memory (LSTM) model which is a particular type of deep learning model that is well suited to time series data (or any data with temporal/spatial/structural order e.g. movies, sentences, etc.). 
+- Testing different model's parameters as discussed before.
+- Adjusting the number of epochs - I use 20 but this might not be optimal. 
+- Improving API: a good idea would be setting the number of predictions we wish to obtain as a parameter but I followed the task and made it permanently 6. Also, one could adjust the API so that also daily or weekly predictions could be made. 
+- For better results I would propably use also sentimental analysis as cryptocurrencies are not very good predictable only knowing the historical prices. For example, if people start to post a lot of "negative" opinions about Bitcoin (e.g. on Twitter using #bitcoin and #BTC hashtags), others might sell it because of that and the price would go down. 
