@@ -1,6 +1,8 @@
 # cryptopredict
 Prediction of Bitcoin price
 
+## PROBLEM AND SOLUTION
+
 The problem I am solving is to build a model to predict price (in USD) movement of Bitcoin (BTC).
 In order to do that, you need to fetch historical data (here from the Cryptocompare API). I decided to fetch only the last 300 hourly data values. If I had more time I would test different number of fetched data.
 
@@ -45,7 +47,12 @@ Below you can see a sample prediction for 6 next hours on 23-08-2018 12:34 PM ED
 
 ![Plot](https://github.com/mtagda/cryptopredict/blob/master/figure.png)
 
-The JSON output is
+## HOW TO RUN THE API
+You just need to run the following commands
 
-{datetime.datetime(2018, 9, 23, 13, 0): 6526.5303, datetime.datetime(2018, 9, 23, 14, 0): 6462.0903, datetime.datetime(2018, 9, 23, 15, 0): 6409.579, datetime.datetime(2018, 9, 23, 16, 0): 6367.0557, datetime.datetime(2018, 9, 23, 17, 0): 6332.925, datetime.datetime(2018, 9, 23, 18, 0): 6305.683}
+        docker build -t predictor .
+        docker run -d -p localhost:5000 predictor
+        curl http://localhost:5000/predict/BTC/USD
 
+Sample output to the command above:
+{"2018-09-23T16:00:00": "6498.334", "2018-09-23T17:00:00": "6434.0776", "2018-09-23T18:00:00": "6379.181", "2018-09-23T19:00:00": "6332.5576", "2018-09-23T20:00:00": "6293.8623", "2018-09-23T21:00:00": "6262.3164"}
