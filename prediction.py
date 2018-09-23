@@ -7,6 +7,7 @@ from tqdm import trange
 from keras.layers import Dense, LSTM
 from keras.models import Sequential
 from sklearn.preprocessing import MinMaxScaler
+import datetime
 
 
 def get_data():
@@ -18,8 +19,12 @@ def get_data():
     endpoint = 'https://min-api.cryptocompare.com/data/histohour'
     res = requests.get(endpoint + '?fsym=BTC&tsym=USD&limit=300&aggregate=1')
     hist = pandas.DataFrame(json.loads(res.content)['Data'])
+    print(hist)
     # Consider closing prices
     dataset = hist.close.values
+    # Get the latest date and time
+    last_timestamp = hist.time.values[-1]
+    last_datetime = datetime.datetime.fromtimestamp(last_timestamp)
     # Convert prices to float32
     dataset = dataset.astype('float32')
     # Reshape dataset
@@ -28,7 +33,7 @@ def get_data():
     scaler = MinMaxScaler(feature_range=(0, 1))
     dataset = scaler.fit_transform(dataset)
     print(dataset)
-    return dataset, scaler
+    return dataset, scaler, last_datetime
 
 
 def prepare_dataset(dataset, look_back=1):
@@ -67,8 +72,8 @@ def build_model(look_back, batch_size=1):
     :return: keras Sequential model
     """
     model = Sequential()
-    model.add(LSTM(64,
-                   activation='relu',
+    model.add(LSTM(32,
+                   activation='tanh',
                    batch_input_shape=(batch_size, look_back, 1),
                    stateful=True,
                    return_sequences=False))
@@ -78,6 +83,14 @@ def build_model(look_back, batch_size=1):
 
 
 def make_forecast(model, look_back_buffer, timesteps=1, batch_size=1):
+    """
+    Make forecast using previously created model
+    :param model: keras Sequential model
+    :param look_back_buffer: previous look_back data
+    :param timesteps: number of data do be predicted
+    :param batch_size: batch_size as int, defaults to 1
+    :return: predicted values
+    """
     forecast_predict = numpy.empty((0, 1), dtype=numpy.float32)
     for _ in trange(timesteps, mininterval=1.0):
         # make prediction with current lookback buffer
@@ -93,8 +106,21 @@ def make_forecast(model, look_back_buffer, timesteps=1, batch_size=1):
     return forecast_predict
 
 
+def generate_dates_hourly(start, n):
+    """
+    Generates future n dates with hourly timestep with respect to start date
+    :param start: start datetime
+    :param number: number of future dates to be created
+    :return: future n dates, start not included
+    """
+    future_datetimes = []
+    for t in range(1,n):
+        future_datetimes.append(start + datetime.timedelta(hours=t))
+    return future_datetimes
+
+
 def main():
-    dataset, scaler = get_data()
+    dataset, scaler, last_datetime = get_data()
 
     # Split dataset into train and test sets
     look_back = int(len(dataset) * 0.20)
@@ -112,12 +138,8 @@ def main():
     # Create and fit model
     batch_size = 1
     model = build_model(look_back, batch_size=batch_size)
-    model.fit(train_x, train_y, epochs=50, batch_size=batch_size, shuffle=False)
+    model.fit(train_x, train_y, epochs=20, batch_size=batch_size, shuffle=False)
     model.reset_states()
-
-    # generate predictions for training
-    train_predict = model.predict(train_x, batch_size)
-    test_predict = model.predict(test_x, batch_size)
 
     # Generate future predictions for the next 6 hours
     future_predict = make_forecast(model, test_x[-1::], timesteps=6, batch_size=batch_size)
@@ -125,12 +147,14 @@ def main():
     dataset = scaler.inverse_transform(dataset)
 
     future_predict = scaler.inverse_transform(future_predict)
-    print(future_predict)
+    print(numpy.reshape(future_predict, [1,6]))
+    future_dates = generate_dates_hourly(last_datetime, 6)
+    print(future_dates)
 
     plt.plot(dataset)
-    plt.plot([None for _ in range(look_back)] +
-             [None for _ in train_predict] +
-             [None for _ in test_predict] +
+    plt.plot(
+             [None for _ in train] +
+             [None for _ in test] +
              [x for x in future_predict])
     plt.show()
 
