@@ -72,7 +72,7 @@ def build_model(look_back, batch_size=1):
                    batch_input_shape=(batch_size, look_back, 1),
                    stateful=True,
                    return_sequences=False))
-    model.add(Dense(output_dim=1, activation='linear'))
+    model.add(Dense(activation="linear", units=1))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 
@@ -112,7 +112,7 @@ def main():
     # Create and fit model
     batch_size = 1
     model = build_model(look_back, batch_size=batch_size)
-    model.fit(train_x, train_y, nb_epoch=50, batch_size=batch_size, shuffle=False)
+    model.fit(train_x, train_y, epochs=50, batch_size=batch_size, shuffle=False)
     model.reset_states()
 
     # generate predictions for training
