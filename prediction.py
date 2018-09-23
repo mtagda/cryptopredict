@@ -8,6 +8,7 @@ from keras.models import Sequential
 from sklearn.preprocessing import MinMaxScaler
 import datetime
 from flask import Flask
+from keras import backend as K
 
 app = Flask(__name__)
 
@@ -161,6 +162,9 @@ def predict(coin, currency):
 
     # Generate future predictions for the next 6 hours
     future_predict = Forecast.make_forecast(model, test_x[-1::], timesteps=6)
+
+    # Clear keras session
+    K.clear_session()
 
     # Invert predictions
     future_predict = scaler.inverse_transform(future_predict)
