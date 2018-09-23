@@ -4,7 +4,7 @@ RUN apt-get update -y
 RUN pip install -r requirements.txt
 ENTRYPOINT ["python"]
 # add our project
-ADD . /
+ADD prediction.py /
 # expose the port for the API
 EXPOSE 5000
 # run the API
